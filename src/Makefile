@@ -23,6 +23,7 @@ CXX = mpic++
 # scaLAPACK implementation
 SCALAPACK = MKL
 # SCALAPACK = LIBSCI
+#SCALAPACK = NETLIB
 
 #############################################################################
 # PATHs
@@ -32,8 +33,6 @@ BOOST_PATH =
 #############################################################################
 # Dynamic linking
 DYNAMIC = 1
-
-
 
 #############################################################################
 # Additional flags for the compiler
@@ -88,13 +87,17 @@ ifeq ($(SCALAPACK),MKL)
   endif
   
   ifeq ($(DYNAMIC), 1)
-    LIB += -L$(MKL_PATH)/lib/intel64/ -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_gnu_thread -l$(MKLMPILIB) -ldl -lpthread -lm -Wl,-rpath=$(MKL_PATH)/lib/intel64/
+    LIB += -L$(MKL_PATH)/lib/intel64/ -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_core -lmkl_gnu_thread -l$(MKLMPILIB) -Wl,-rpath=$(MKL_PATH)/lib/intel64/
   else
-    LIB += $(MKL_PATH)/lib/intel64/libmkl_scalapack_lp64.a -Wl,--start-group $(MKL_PATH)/lib/intel64/libmkl_intel_lp64.a $(MKL_PATH)/lib/intel64/libmkl_core.a $(MKL_PATH)/lib/intel64/libmkl_intel_thread.a -Wl,--end-group $(MKL_PATH)/lib/intel64/lib$(MKLMPILIB).a  -ldl -lpthread -lm
+    LIB += $(MKL_PATH)/lib/intel64/libmkl_scalapack_lp64.a -Wl,--start-group $(MKL_PATH)/lib/intel64/libmkl_intel_lp64.a $(MKL_PATH)/lib/intel64/libmkl_core.a $(MKL_PATH)/lib/intel64/libmkl_intel_thread.a -Wl,--end-group $(MKL_PATH)/lib/intel64/lib$(MKLMPILIB).a
   endif
 endif
 
-LIB += -lpthread -lm
+ifeq ($(SCALAPACK),NETLIB)
+    LIB += -L/usr/lib64/openmpi/lib -lscalapack -lmpiblacs -Wl,-rpath=/usr/lib64/openmpi/lib
+endif
+
+LIB += -lpthread -lm -ldl
 
 # CXXFLAGS += -I $(MKL_PATH)/include -fopenmp -m64 #-Wall 
 
